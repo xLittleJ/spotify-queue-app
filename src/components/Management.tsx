@@ -1,3 +1,4 @@
+// Import necessary actions and hooks
 'use client';
 
 import {
@@ -11,12 +12,23 @@ import { useRouter } from 'next/navigation';
 import { FormEvent, useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
+// Define the BannedUser type
+interface BannedUser {
+  id: string;
+  global_name: string;
+  username: string;
+  avatar: string;
+  reason: string | null;
+}
+
+// Define the Management component
 export default function Management() {
   const [loading, setLoading] = useState(false);
-  const [banned, setBanned] = useState<any[]>([]);
+  const [banned, setBanned] = useState<BannedUser[]>([]);
 
   const router = useRouter();
 
+  // Fetch banned users from the server on component mount
   useEffect(() => {
     const fetchBanned = async () => {
       const data = await getBanned();
@@ -27,6 +39,7 @@ export default function Management() {
     fetchBanned();
   }, []);
 
+  // Function to close the keyboard
   const closeKeyboard = () => {
     const inputElement = document.activeElement as HTMLInputElement;
     if (inputElement) {
@@ -34,6 +47,7 @@ export default function Management() {
     }
   };
 
+  // Function to handle banning a user
   const handleBan = async (event: FormEvent<HTMLFormElement>) => {
     closeKeyboard();
     event.preventDefault();
@@ -79,6 +93,7 @@ export default function Management() {
       setLoading(false);
     }
   };
+
   return (
     <div className='mt-6 flex flex-col items-center justify-center'>
       <h3 className='text-2xl font-bold text-white text-center mt-4'>

@@ -1,88 +1,186 @@
-# Spotify Queue App
+# :musical_note: Spotify Queue App
 
-This web application, built with Next.js 15, lets users easily add songs to your Spotify queue.
+A self-hosted web application that allows users to add songs to your Spotify queue. Built with Next.js 15.
 
-## Getting Started
+![License](https://img.shields.io/badge/license-MIT-blue)
+![Next.js](https://img.shields.io/badge/Next.js-15-black)
 
-Here's how to set up the Spotify Queue App:
+## :bookmark: Table of Contents
+
+- [Features](#sparkles-features)
+- [Getting Started](#rocket-getting-started)
+- [Installation](#installation)
+- [Configuration](#gear-configuration)
+- [Running the Application](#video_game-running-the-application)
+- [Troubleshooting](#wrench-troubleshooting)
+- [Contributing](#handshake-contributing)
+- [License](#scroll-license)
+- [Support](#sparkling_heart-support)
+
+## :sparkles: Features
+
+- :headphones: Let users add songs to your Spotify queue
+- :lock: Secure authentication via Discord
+- :shield: Cloudflare Turnstile protection against bots
+- :no_entry_sign: Word filtering for song titles
+- :memo: Optional Discord logging for queue submissions
+
+## :rocket: Getting Started
 
 ### Prerequisites
 
-Before you begin, ensure you have the following installed and accounts created:
+Before you begin, ensure you have:
 
-- **Node.js:** Version 20 or later.
-- **Yarn:** A package manager.
-- **PostgreSQL:** A database for Prisma.
-- **Spotify Developer Account:** Required for Spotify API access.
-- **Discord Account:** Required for Discord integration.
+- **Node.js** (v20 or later)
+- **Yarn** package manager
+- **PostgreSQL** database
+- **Spotify Premium Account**
+- **Discord Account**
+- **A Domain** (for production deployment)
+- **Cloudflare Account** (for Turnstile)
 
 ### Installation
 
-1.  **Clone the Repository:**
+1. **Clone the Repository**
 
-    ```bash
-    git clone https://github.com/xlittlej/spotify-queue-app.git
-    ```
+   ```bash
+   git clone https://github.com/xlittlej/spotify-queue-app.git
+   cd spotify-queue-app
+   ```
 
-2.  **Install Dependencies:**
+2. **Install Dependencies**
+   ```bash
+   yarn install
+   ```
 
-    ```bash
-    yarn install
-    ```
+## :gear: Configuration
 
-3.  **Configure Environment Variables:**
+### 1. Spotify Setup
 
-    - Copy the `.env.example` file to `.env` in the project's root directory.
-    - Open the `.env` file and fill in the following environment variables with your specific credentials and settings:
+1. Go to [Spotify Developer Dashboard](https://developer.spotify.com/dashboard)
+2. Create a new application
+3. Add redirect URIs:
+   - Development: `http://localhost:3000/api/spotify/callback`
+   - Production: `https://yourdomain.com/api/spotify/callback`
+4. Note down the Client ID and Client Secret
 
-      - `SPOTIFY_CLIENT_ID`: Obtained from your Spotify Developer Dashboard.
-      - `SPOTIFY_CLIENT_SECRET`: Obtained from your Spotify Developer Dashboard.
-      - `SPOTIFY_USER_ID`: Your Spotify user ID.
-      - `SPOTIFY_REDIRECT_URI`: The redirect URI for your Spotify application (default: `/api/spotify/callback`). **Important:** This URI must be whitelisted in your Spotify Developer Dashboard (e.g., `https://yourdomain.com/api/discord/callback`) (As well as `http://localhost:3000/api/spotify/callback`).
-      - `DISCORD_CLIENT_ID`: Obtained from the Discord Developer Portal.
-      - `DISCORD_CLIENT_SECRET`: Obtained from the Discord Developer Portal.
-      - `DISCORD_REDIRECT_URI`: The redirect URI for your Discord application (default: `/api/discord/callback`). **Important:** This URI must be whitelisted in your Discord Developer Portal (e.g., `https://yourdomain.com/api/discord/callback`).
-      - `DISCORD_BOT_TOKEN`: The token for your Discord bot.
-      - `DISCORD_QUEUE_LOGS_CHANNEL_ID`: The ID of the Discord channel where queue logs will be sent. (Optional)
-      - `DISCORD_DEVELOPER_ID`: Your Discord user ID.
-      - `NEXT_PUBLIC_TURNSTILE_SITE_KEY`: Obtained from Cloudflare Turnstile.
-      - `TURNSTILE_SECRET_KEY`: Obtained from Cloudflare Turnstile.
-      - `JWT_SECRET_KEY`: A secret key for JWT signing. Generate this using: `yarn jwt`
-      - `JWT_ENCRYPTION_KEY`: An encryption key for JWT. Generate this using: `yarn jwt`
-      - `DOMAIN`: Your domain (e.g., `https://yourdomain.com`)
-      - `BANNED_WORDS`: A comma-separated list of banned words in track names. (Optional)
-      - `DATABASE_URL`: The connection string for your PostgreSQL database (e.g., `postgresql://user:password@host:port/database?schema=public`).
+### 2. Discord Setup
 
-4.  **Setup Prisma**
+1. Visit [Discord Developer Portal](https://discord.com/developers/applications)
+2. Create a new application
+3. Under OAuth2, add redirect URIs:
+   - Development: `http://localhost:3000/api/discord/callback`
+   - Production: `https://yourdomain.com/api/discord/callback`
+4. Note down the Client ID and Client Secret
+5. Create a bot and note down the token
 
-    ```bash
-    npx prisma generate && npx prisma db push
-    ```
+### 3. Environment Variables
 
-### Running the Application
+Copy `.env.example` to `.env` and configure:
 
-**Development:**
+#### Spotify Configuration
 
-1.  Start the development server:
+- `SPOTIFY_CLIENT_ID` - From Spotify Developer Dashboard
+- `SPOTIFY_CLIENT_SECRET` - From Spotify Developer Dashboard
+- `SPOTIFY_USER_ID` - Your Spotify user ID (found in Profile)
+- `SPOTIFY_REDIRECT_URI` - Default: `/api/spotify/callback`
 
-    ```bash
-    yarn dev
-    ```
+#### Discord Configuration
 
-2.  Open your browser and navigate to `http://localhost:3000` to view the application.
+- `DISCORD_CLIENT_ID` - From Discord Developer Portal
+- `DISCORD_CLIENT_SECRET` - From Discord Developer Portal
+- `DISCORD_REDIRECT_URI` - Default: `/api/discord/callback`
+- `DISCORD_BOT_TOKEN` - Your Discord bot token
+- `DISCORD_QUEUE_LOGS_CHANNEL_ID` - (Optional) Channel ID for logging
+- `DISCORD_DEVELOPER_ID` - Your Discord user ID
 
-3.  Authorise Spotify: `http://localhost:3000/api/spotify/login`
+#### Security
 
-**Production:**
+- `NEXT_PUBLIC_TURNSTILE_SITE_KEY` - From Cloudflare Turnstile
+- `TURNSTILE_SECRET_KEY` - From Cloudflare Turnstile
+- `JWT_SECRET_KEY` - Generate using: `yarn jwt`
+- `JWT_ENCRYPTION_KEY` - Generate using: `yarn jwt`
 
-1.  Build the application:
+#### General
 
-    ```bash
-    yarn build
-    ```
+- `DOMAIN` - Your domain (e.g., `https://yourdomain.com`)
+- `BANNED_WORDS` - (Optional) Comma-separated list of banned words
+- `DATABASE_URL` - PostgreSQL connection string
 
-2.  Start the production server:
+### 4. Database Setup
 
-    ```bash
-    yarn start
-    ```
+```bash
+# Generate Prisma client and push schema
+npx prisma generate
+npx prisma db push
+```
+
+## :video_game: Running the Application
+
+### Development Mode
+
+1. Start the development server:
+   ```bash
+   yarn dev
+   ```
+2. Visit `http://localhost:3000`
+3. Authorize your Spotify account:
+   ```
+   http://localhost:3000/api/spotify/login
+   ```
+
+### Production Mode
+
+1. Build the application:
+   ```bash
+   yarn build
+   ```
+2. Start the production server:
+   ```bash
+   yarn start
+   ```
+
+## :wrench: Troubleshooting
+
+### Common Issues
+
+1. **Spotify Authentication Failed**
+
+   - Verify Spotify Premium subscription
+   - Check redirect URIs in Spotify Dashboard
+   - Ensure environment variables are correct
+
+2. **Discord Login Issues**
+
+   - Verify Discord application settings
+   - Check redirect URIs in Discord Developer Portal
+   - Ensure environment variables are correct
+
+3. **Database Connection Errors**
+
+   - Verify PostgreSQL is running
+   - Check DATABASE_URL format
+   - Ensure database exists (`npx prisma db push`)
+
+## :memo: Usage
+
+1. Host the application on your domain
+2. Share the URL with your people
+3. Users log in with Discord
+4. Users can submit Spotify songs to automatically to add to your queue
+
+## :handshake: Contributing
+
+Contributions are welcome! Feel free to:
+
+- Report bugs
+- Suggest new features
+- Submit pull requests
+
+## :scroll: License
+
+This project is licensed under the MIT License.
+
+## :sparkling_heart: Support
+
+If you find this project helpful, please consider giving it a star :star:

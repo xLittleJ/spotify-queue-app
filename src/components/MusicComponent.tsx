@@ -1,3 +1,4 @@
+// Import necessary libraries and components
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -9,33 +10,83 @@ import { Id, toast } from 'react-toastify';
 import addToQueueServer from '@/actions/addToQueue';
 import { Login, Logout } from '@/actions/authActions';
 
+// Define the main MusicComponent function
 export default function MusicComponent({
   user,
   error,
   currentlyPlaying,
 }: {
-  user: any;
+  user?: {
+    avatar: string;
+    username: string;
+    globalName: string;
+  } | null;
   error: string | null;
   currentlyPlaying: string | null;
 }) {
   const router = useRouter();
 
+  // Parse currently playing data from the string
   const currentlyPlayingData = currentlyPlaying && JSON.parse(currentlyPlaying);
 
+  // Show error toast if there is an error
   useEffect(() => {
-    if (error)
-      toast.error(error, {
-        closeOnClick: true,
-        toastId: 'error',
-        theme: 'dark',
-      });
+    if (!error) return;
+
+    toast.error(error, {
+      closeOnClick: true,
+      toastId: 'error',
+      theme: 'dark',
+    });
   }, [error]);
 
-  const [nowPlaying, setNowPlaying] = useState<any>(currentlyPlayingData?.data);
+  // Define the NowPlayingType interface for type safety
+  interface Artist {
+    name: string;
+    external_urls: {
+      spotify: string;
+    };
+  }
+
+  interface Album {
+    name: string;
+    images: { url: string }[];
+    external_urls: {
+      spotify: string;
+    };
+  }
+
+  interface User {
+    name: string;
+    id: string;
+  }
+
+  interface NowPlayingType {
+    name: string;
+    title: string;
+    artists: Artist[];
+    album: Album;
+    albumImageUrl: string;
+    songUrl: string;
+    external_urls: {
+      spotify: string;
+    };
+    user: User;
+    progressMs: number;
+    durationMs: number;
+    isPlaying: boolean;
+  }
+
+  // State variables for managing the music component
+  const [nowPlaying, setNowPlaying] = useState<NowPlayingType | null>(
+    currentlyPlayingData?.data,
+  );
   const [progressMs, setProgressMs] = useState<number>(
     currentlyPlayingData?.progressMs || 0,
   );
-  const [queue, setQueue] = useState<any>(currentlyPlayingData?.queue || []);
+  const [queue, setQueue] = useState<NowPlayingType[]>(
+    currentlyPlayingData?.queue || [],
+  );
   const [queueEnabled, setQueueEnabled] = useState<boolean>(
     currentlyPlayingData?.queueEnabled || false,
   );
@@ -49,6 +100,7 @@ export default function MusicComponent({
   const [token, setToken] = useState('');
   const turnstile = useTurnstile();
 
+  // Establish a connection to the SSE server
   useEffect(() => {
     let eventSource: EventSource | null = null;
 
@@ -60,6 +112,7 @@ export default function MusicComponent({
       console.log('Connecting to SSE server...');
       eventSource = new EventSource('/api/sse' as string);
 
+      // Handle successful connection
       eventSource.onopen = () => {
         console.log('SSE connection established');
         router.refresh();
@@ -74,6 +127,7 @@ export default function MusicComponent({
         }
       };
 
+      // Handle incoming messages from the server
       eventSource.onmessage = (event) => {
         const data = JSON.parse(event.data);
 
@@ -87,6 +141,7 @@ export default function MusicComponent({
           );
         }
 
+        // Update state with new data
         setNowPlaying(data?.data);
         setProgressMs((prevProgressMs) => {
           const newProgressMs = data?.data?.progressMs || 0;
@@ -102,6 +157,7 @@ export default function MusicComponent({
         setQueueEnabled(data?.queueEnabled || false);
       };
 
+      // Handle connection errors
       eventSource.onerror = (error) => {
         console.log('SSE connection error:', error);
         if (
@@ -116,6 +172,7 @@ export default function MusicComponent({
 
     connectSSE();
 
+    // Cleanup function to close the connection
     return () => {
       if (eventSource) {
         eventSource.close();
@@ -123,6 +180,7 @@ export default function MusicComponent({
     };
   }, [serverToastId, router]);
 
+  // Increment progress of the currently playing song
   useEffect(() => {
     if (nowPlaying?.isPlaying) {
       const incrementProgress = () => {
@@ -136,18 +194,21 @@ export default function MusicComponent({
 
       const interval = setInterval(incrementProgress, 1000);
 
+      // Cleanup function to clear the interval
       return () => {
         clearInterval(interval);
       };
     }
   }, [nowPlaying?.isPlaying, nowPlaying?.durationMs]);
 
+  // Function to format time in mm:ss
   const getFormattedTime = (ms: number) => {
     const minutes = Math.floor(ms / 60000);
     const seconds = Math.floor((ms % 60000) / 1000);
     return `${minutes}:${String(seconds).padStart(2, '0')}`;
   };
 
+  // Function to close the keyboard
   const closeKeyboard = () => {
     const inputElement = document.activeElement as HTMLInputElement;
     if (inputElement) {
@@ -155,6 +216,7 @@ export default function MusicComponent({
     }
   };
 
+  // Function to add a song to the queue
   const addToQueue = async () => {
     closeKeyboard();
     const toastId = toast.loading('Adding to queue...', {
@@ -185,6 +247,7 @@ export default function MusicComponent({
 
       const data = await addToQueueServer(token, spotifyUrl);
 
+      // Reset state after adding to queue
       setSpotifyUrl('');
       turnstile.reset();
       setToken('');
@@ -203,7 +266,7 @@ export default function MusicComponent({
           autoClose: 2000,
         });
       }
-    } catch (error: Error | any) {
+    } catch (error: unknown) {
       router.refresh();
       toast.update(toastId, {
         render: 'A connection error has occurred',
@@ -260,19 +323,21 @@ export default function MusicComponent({
                 {nowPlaying?.artists && 'by '}
                 <span className='font-bold'>
                   {nowPlaying?.artists
-                    ? nowPlaying.artists.map((artist: any, index: number) => (
-                        <span key={index}>
-                          <a
-                            href={artist.external_urls.spotify}
-                            target='_blank'
-                            rel='noopener noreferrer'
-                            className='text-[#e9e9e9] hover:underline hover:text-[#f6f6f6]'
-                          >
-                            {artist.name}
-                          </a>
-                          {index < nowPlaying.artists.length - 1 ? ', ' : ''}
-                        </span>
-                      ))
+                    ? nowPlaying.artists.map(
+                        (artist: Artist, index: number) => (
+                          <span key={index}>
+                            <a
+                              href={artist.external_urls.spotify}
+                              target='_blank'
+                              rel='noopener noreferrer'
+                              className='text-[#e9e9e9] hover:underline hover:text-[#f6f6f6]'
+                            >
+                              {artist.name}
+                            </a>
+                            {index < nowPlaying.artists.length - 1 ? ', ' : ''}
+                          </span>
+                        ),
+                      )
                     : 'Spotify is closed'}
                 </span>
               </p>
@@ -352,7 +417,7 @@ export default function MusicComponent({
           <div className='border border-white rounded-md p-3 mt-3 overflow-y-scroll max-h-[200px]'>
             {queue.length > 0 ? (
               <ul className='queue-list'>
-                {queue.map((track: any, index: number) => (
+                {queue.map((track: NowPlayingType, index: number) => (
                   <li key={index} className='flex items-center mb-2'>
                     <span className='text-sm font-bold mr-2'>{index + 1}.</span>{' '}
                     <img
@@ -371,7 +436,7 @@ export default function MusicComponent({
                       </a>
                       <p className='text-xs text-[#e9e9e9]'>
                         by{' '}
-                        {track.artists.map((artist: any, index: number) => (
+                        {track.artists.map((artist: Artist, index: number) => (
                           <span key={index}>
                             <a
                               href={artist.external_urls.spotify}
