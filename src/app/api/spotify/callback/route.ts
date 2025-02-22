@@ -69,7 +69,7 @@ export async function GET(req: Request) {
   if (id !== SPOTIFY_USER_ID) {
     return NextResponse.json({
       success: false,
-      message: "You are't authorised to use this endpoint",
+      message: "You aren't authorised to use this endpoint",
     });
   }
 
