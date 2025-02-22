@@ -73,7 +73,7 @@ export async function GET(req: Request) {
   }
 
   const token = jwt.sign(data, process.env.JWT_SECRET_KEY || '', {
-    expiresIn: '1h',
+    expiresIn: '1w',
   });
 
   const encryptedToken = await new CompactEncrypt(
