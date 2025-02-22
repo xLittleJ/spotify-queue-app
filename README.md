@@ -43,14 +43,14 @@ Before you begin, ensure you have the following installed and accounts created:
       - `DISCORD_CLIENT_SECRET`: Obtained from the Discord Developer Portal.
       - `DISCORD_REDIRECT_URI`: The redirect URI for your Discord application (default: `/api/discord/callback`). **Important:** This URI must be whitelisted in your Discord Developer Portal (e.g., `https://yourdomain.com/api/discord/callback`).
       - `DISCORD_BOT_TOKEN`: The token for your Discord bot.
-      - `DISCORD_QUEUE_LOGS_CHANNEL_ID`: The ID of the Discord channel where queue logs will be sent.
+      - `DISCORD_QUEUE_LOGS_CHANNEL_ID`: The ID of the Discord channel where queue logs will be sent. (Optional)
       - `DISCORD_DEVELOPER_ID`: Your Discord user ID.
       - `NEXT_PUBLIC_TURNSTILE_SITE_KEY`: Obtained from Cloudflare Turnstile.
       - `TURNSTILE_SECRET_KEY`: Obtained from Cloudflare Turnstile.
       - `JWT_SECRET_KEY`: A secret key for JWT signing. Generate this using: `yarn jwt`
       - `JWT_ENCRYPTION_KEY`: An encryption key for JWT. Generate this using: `yarn jwt`
       - `DOMAIN`: Your domain (e.g., `https://yourdomain.com`)
-      - `BANNED_WORDS`: A comma-separated list of banned words in track names.
+      - `BANNED_WORDS`: A comma-separated list of banned words in track names. (Optional)
       - `DATABASE_URL`: The connection string for your PostgreSQL database (e.g., `postgresql://user:password@host:port/database?schema=public`).
 
 4.  **Setup Prisma**
