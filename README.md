@@ -1,6 +1,6 @@
 # Spotify Queue App
 
-This web application, built with Next.js 15, lets you easily add songs to your Spotify queue.
+This web application, built with Next.js 15, lets users easily add songs to your Spotify queue.
 
 ## Getting Started
 
