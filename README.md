@@ -47,8 +47,8 @@ Before you begin, ensure you have the following installed and accounts created:
       - `DISCORD_DEVELOPER_ID`: Your Discord user ID.
       - `NEXT_PUBLIC_TURNSTILE_SITE_KEY`: Obtained from Cloudflare Turnstile.
       - `TURNSTILE_SECRET_KEY`: Obtained from Cloudflare Turnstile.
-      - `JWT_SECRET_KEY`: A secret key for JWT signing. Generate this using: `node scripts/generateJWT.js`
-      - `JWT_ENCRYPTION_KEY`: An encryption key for JWT. Generate this using: `node scripts/generateJWT.js`
+      - `JWT_SECRET_KEY`: A secret key for JWT signing. Generate this using: `yarn jwt`
+      - `JWT_ENCRYPTION_KEY`: An encryption key for JWT. Generate this using: `yarn jwt`
       - `DOMAIN`: Your domain (e.g., `https://yourdomain.com`)
       - `BANNED_WORDS`: A comma-separated list of banned words in track names.
       - `DATABASE_URL`: The connection string for your PostgreSQL database (e.g., `postgresql://user:password@host:port/database?schema=public`).
