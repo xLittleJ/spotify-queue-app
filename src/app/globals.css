@@ -1,0 +1,31 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+}
+
+input,
+textarea {
+  background-color: #222222;
+}
+
+input:focus,
+textarea:focus {
+  outline: none;
+  -webkit-box-shadow: 0 0 20px rgba(207, 207, 178, 0.15);
+  box-shadow: 0 0 20px rgba(207, 207, 178, 0.15);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #fff;
+  opacity: 0.8;
+}
