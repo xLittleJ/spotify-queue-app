@@ -499,7 +499,7 @@ export default function MusicComponent({
                   Logout
                 </button>
                 {user && (
-                  <span className='ml-4 text-sm text-[#e9e9e9] flex items-center'>
+                  <span className='ml-4 text-sm text-[#e9e9e9] flex items-center flex-none'>
                     Logged in as{' '}
                     {user.avatar && (
                       <img
