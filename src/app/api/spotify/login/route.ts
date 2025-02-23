@@ -6,7 +6,7 @@ const REDIRECT_URI =
   process.env.NODE_ENV === 'production'
     ? (process.env.DOMAIN as string) + process.env.SPOTIFY_REDIRECT_URI || ''
     : 'http://localhost:3000' + process.env.SPOTIFY_REDIRECT_URI || '';
-export async function GET(req: Request) {
+export async function GET() {
   const queryParams = new URLSearchParams({
     client_id: CLIENT_ID,
     redirect_uri: REDIRECT_URI,

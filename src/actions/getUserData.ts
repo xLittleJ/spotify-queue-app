@@ -12,7 +12,13 @@ const encryptionKey = new TextEncoder().encode(
 export default async function getUserData(): Promise<{
   success: boolean;
   message?: string;
-  user?: any;
+  user?: {
+    id: string;
+    username: string;
+    global_name: string | null;
+    discriminator: string;
+    avatar: string;
+  };
 }> {
   const token = await (await cookies()).get('token')?.value;
   if (!token) {

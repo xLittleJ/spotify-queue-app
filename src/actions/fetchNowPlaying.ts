@@ -1,5 +1,11 @@
 'use server';
 
+import {
+  NowPlaying,
+  QueueItemUser,
+  TokenResponse,
+  TrackObject,
+} from '@/types/types';
 import getSpotifyAccessToken from './getSpotifyAccessToken';
 import refreshAccessToken from './refreshAccessToken';
 import db from '@/lib/db';
@@ -9,7 +15,8 @@ export default async function fetchNowPlaying() {
   let songsAdded = await db.addedSong.findMany();
   let recentlyPlayedTracks = await db.recentlyPlayedTrack.findMany();
 
-  const spotifyAccessData = (await getSpotifyAccessToken()) as any;
+  const spotifyAccessData =
+    (await getSpotifyAccessToken()) as unknown as TokenResponse;
   if (!spotifyAccessData) return null;
   let { access_token_expires, access_token: spotify_access_token } =
     spotifyAccessData;
@@ -21,7 +28,7 @@ export default async function fetchNowPlaying() {
     spotify_access_token =
       refreshedTokens?.access_token || spotify_access_token;
   }
-  let nowPlaying: any = {
+  let nowPlaying: NowPlaying = {
     isPlaying: false,
   };
   try {
@@ -46,7 +53,7 @@ export default async function fetchNowPlaying() {
         },
       );
 
-      const data: any = await response.json().catch(() => {});
+      const data = await response.json();
 
       const queueResponse = await fetch(
         'https://api.spotify.com/v1/me/player/queue',
@@ -68,7 +75,7 @@ export default async function fetchNowPlaying() {
         }
       }
 
-      const queueData: any = await queueResponse.json();
+      const queueData = await queueResponse.json();
 
       if (data?.item?.id) {
         const index = queue.findIndex((i) => i.id === data.item.id);
@@ -87,7 +94,7 @@ export default async function fetchNowPlaying() {
 
         for (let i = 0; i < queue.length; i++) {
           const track = queue[i];
-          if (!queueData.queue.some((q: any) => q.id === track.id)) {
+          if (!queueData.queue.some((q: { id: string }) => q.id === track.id)) {
             queue = queue.filter((t) => t.id !== track.id);
             await db.queueItem.deleteMany({
               where: {
@@ -162,9 +169,13 @@ export default async function fetchNowPlaying() {
             durationMs: data.item?.duration_ms,
           },
           queue: queueData.queue
-            .filter((track: any) => queue.some((q) => q.id === track.id))
-            .map((track: any) => {
-              track.user = queue.find((q) => q.id === track.id)?.user || null;
+            .filter((track: TrackObject) =>
+              queue.some((q) => q.id === track.id),
+            )
+            .map((track: { id: string; user: QueueItemUser }) => {
+              track.user =
+                (queue.find((q) => q.id === track.id)
+                  ?.user as unknown as QueueItemUser) || null;
               return track;
             }),
           queueEnabled:
@@ -179,7 +190,7 @@ export default async function fetchNowPlaying() {
               })
               .then((r) => r?.boolean ?? null)) ?? true,
         };
-        if (songsAdded.some((s) => s.id === data.item?.id))
+        if (songsAdded.some((s) => s.id === data.item?.id) && nowPlaying.data)
           nowPlaying.data.user = songsAdded.find((s) => s.id === data.item?.id);
       }
     }

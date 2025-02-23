@@ -8,18 +8,10 @@ import {
   updateBannedUser,
 } from '@/actions/banActions';
 import { toggleListener, toggleQueue } from '@/actions/toggleActions';
+import { BannedUser } from '@prisma/client';
 import { useRouter } from 'next/navigation';
 import { FormEvent, useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
-
-// Define the BannedUser type
-interface BannedUser {
-  id: string;
-  global_name: string;
-  username: string;
-  avatar: string;
-  reason: string | null;
-}
 
 // Define the Management component
 export default function Management() {
@@ -33,7 +25,7 @@ export default function Management() {
     const fetchBanned = async () => {
       const data = await getBanned();
       if (data.success) {
-        setBanned(data.bannedDiscordIds);
+        setBanned(data.bannedDiscordIds || []);
       }
     };
     fetchBanned();
@@ -64,10 +56,11 @@ export default function Management() {
       console.log(data);
       if (data.success) {
         form.reset();
-        setBanned(data.bannedDiscordIds);
+        setBanned(data.bannedDiscordIds || []);
         toast.update(toastId, {
           render: `${
-            data.bannedDiscordIds[data.bannedDiscordIds.length - 1].global_name
+            data.bannedDiscordIds?.[data.bannedDiscordIds.length - 1]
+              ?.global_name
           } has been banned`,
           type: 'success',
           isLoading: false,
@@ -81,7 +74,7 @@ export default function Management() {
           autoClose: 2000,
         });
       }
-    } catch (error) {
+    } catch {
       router.refresh();
       toast.update(toastId, {
         render: 'A connection error has occurred',
@@ -128,7 +121,7 @@ export default function Management() {
                     autoClose: 2000,
                   });
                 }
-              } catch (error) {
+              } catch {
                 router.refresh();
                 toast.update(toastId, {
                   render: 'A connection error has occurred',
@@ -175,7 +168,7 @@ export default function Management() {
                     autoClose: 2000,
                   });
                 }
-              } catch (error) {
+              } catch {
                 router.refresh();
                 toast.update(toastId, {
                   render: 'A connection error has occurred',
@@ -200,7 +193,7 @@ export default function Management() {
           Banned Users
         </h3>
         <div className='queue-box border border-white rounded-md p-3 overflow-y-scroll max-h-[200px]'>
-          {banned.length > 0 ? (
+          {banned?.length > 0 ? (
             <ul className='list-disc pl-5'>
               {banned.map((person) => (
                 <li
@@ -233,7 +226,7 @@ export default function Management() {
                           setLoading(true);
                           const data = await unbanUser(person.id);
                           if (data.success) {
-                            setBanned(data.bannedDiscordIds);
+                            setBanned(data.bannedDiscordIds || []);
                             toast.update(toastId, {
                               render: `Unbanned ${person.global_name}`,
                               type: 'success',
@@ -248,7 +241,7 @@ export default function Management() {
                               autoClose: 2000,
                             });
                           }
-                        } catch (error) {
+                        } catch {
                           router.refresh();
                           toast.update(toastId, {
                             render: 'A connection error has occurred',
@@ -281,7 +274,7 @@ export default function Management() {
                           setLoading(true);
                           const data = await updateBannedUser(person.id);
                           if (data.success) {
-                            setBanned(data.bannedDiscordIds);
+                            setBanned(data.bannedDiscordIds || []);
                             toast.update(toastId, {
                               render: `Updated ${person.global_name}`,
                               type: 'success',
@@ -296,7 +289,7 @@ export default function Management() {
                               autoClose: 2000,
                             });
                           }
-                        } catch (error) {
+                        } catch {
                           router.refresh();
                           toast.update(toastId, {
                             render: 'A connection error has occurred',

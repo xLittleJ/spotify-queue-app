@@ -2,13 +2,14 @@
 
 import db from '@/lib/db';
 import getUserData from './getUserData';
+import { BannedUser } from '@prisma/client';
 const { DISCORD_BOT_TOKEN, DISCORD_DEVELOPER_ID } = process.env;
 
 function isSnowflake(id: string) {
   return /^\d+$/.test(id);
 }
 
-export async function isBanned(id: string): Promise<any> {
+export async function isBanned(id: string): Promise<BannedUser | null> {
   const banned = await db.bannedUser.findFirst({
     where: {
       id: id,
@@ -21,7 +22,7 @@ export async function isBanned(id: string): Promise<any> {
 export async function getBanned(): Promise<{
   success: boolean;
   message?: string;
-  bannedDiscordIds?: any;
+  bannedDiscordIds?: BannedUser[];
 }> {
   const userData = await getUserData();
 
@@ -37,9 +38,11 @@ export async function getBanned(): Promise<{
   };
 }
 
-export async function banUser(
-  formData: FormData,
-): Promise<{ success: boolean; message?: string; bannedDiscordIds?: any }> {
+export async function banUser(formData: FormData): Promise<{
+  success: boolean;
+  message?: string;
+  bannedDiscordIds?: BannedUser[];
+}> {
   const userData = await getUserData();
 
   if (userData?.user?.id !== DISCORD_DEVELOPER_ID)
@@ -48,7 +51,10 @@ export async function banUser(
       message: 'Unauthorised',
     };
 
-  const { id, reason } = Object.fromEntries(formData) as any;
+  const { id, reason } = Object.fromEntries(formData) as {
+    id: string;
+    reason: string;
+  };
 
   if (!id || !isSnowflake(id))
     return {
@@ -57,7 +63,7 @@ export async function banUser(
     };
   const bannedDiscordIds = await db.bannedUser.findMany();
 
-  const alreadyBanned = bannedDiscordIds.find((u: any) => u.id === id);
+  const alreadyBanned = bannedDiscordIds.find((u: BannedUser) => u.id === id);
 
   if (alreadyBanned)
     return {
@@ -103,9 +109,11 @@ export async function banUser(
   return { success: true, bannedDiscordIds };
 }
 
-export async function unbanUser(
-  id: string,
-): Promise<{ success: boolean; message?: string; bannedDiscordIds?: any }> {
+export async function unbanUser(id: string): Promise<{
+  success: boolean;
+  message?: string;
+  bannedDiscordIds?: BannedUser[];
+}> {
   const userData = await getUserData();
 
   if (userData?.user?.id !== DISCORD_DEVELOPER_ID)
@@ -120,7 +128,7 @@ export async function unbanUser(
     };
   const bannedDiscordIds = await db.bannedUser.findMany();
 
-  const alreadyBanned = bannedDiscordIds.find((u: any) => u.id === id);
+  const alreadyBanned = bannedDiscordIds.find((u: BannedUser) => u.id === id);
 
   if (!alreadyBanned)
     return {
@@ -140,9 +148,11 @@ export async function unbanUser(
   };
 }
 
-export async function updateBannedUser(
-  id: string,
-): Promise<{ success: boolean; message?: string; bannedDiscordIds?: any }> {
+export async function updateBannedUser(id: string): Promise<{
+  success: boolean;
+  message?: string;
+  bannedDiscordIds?: BannedUser[];
+}> {
   const userData = await getUserData();
 
   if (userData?.user?.id !== DISCORD_DEVELOPER_ID)
@@ -157,7 +167,7 @@ export async function updateBannedUser(
     };
   const bannedDiscordIds = await db.bannedUser.findMany();
 
-  const alreadyBanned = bannedDiscordIds.find((u: any) => u.id === id);
+  const alreadyBanned = bannedDiscordIds.find((u: BannedUser) => u.id === id);
 
   if (!alreadyBanned)
     return {

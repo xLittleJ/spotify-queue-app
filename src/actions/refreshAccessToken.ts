@@ -1,12 +1,14 @@
 'use server';
 
+import { TokenResponse } from '@/types/types';
 import getSpotifyAccessToken from './getSpotifyAccessToken';
 import db from '@/lib/db';
 
 const { SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET } = process.env;
 
-export default async function refreshAccessToken(): Promise<any> {
-  const spotifyAccessData = (await getSpotifyAccessToken()) as any;
+export default async function refreshAccessToken(): Promise<TokenResponse | null> {
+  const spotifyAccessData =
+    (await getSpotifyAccessToken()) as unknown as TokenResponse;
   if (!spotifyAccessData) return null;
   const { refresh_token } = spotifyAccessData;
   try {
@@ -24,7 +26,7 @@ export default async function refreshAccessToken(): Promise<any> {
       }),
     });
 
-    const data: any = await response.json();
+    const data = await response.json();
 
     const obj = {
       access_token: data.access_token,
@@ -46,5 +48,6 @@ export default async function refreshAccessToken(): Promise<any> {
     return obj;
   } catch (error) {
     console.error('Error refreshing access token:', error);
+    return null;
   }
 }

@@ -4,8 +4,13 @@ import getUserData from './getUserData';
 
 export default async function getMe(): Promise<{
   success: boolean;
-  message?: any;
-  user?: any;
+  message?: string;
+  user?: {
+    id: string;
+    username: string;
+    globalName: string;
+    avatar: string;
+  };
 }> {
   const userData = await getUserData();
 
@@ -25,7 +30,7 @@ export default async function getMe(): Promise<{
           userData.user.avatar
         }.${userData.user.avatar.startsWith('a_') ? 'gif' : 'png'}`
       : `https://cdn.discordapp.com/embed/avatars/${
-          userData.user.discriminator % 5
+          parseInt(userData.user.discriminator) % 5
         }.png`,
   };
 

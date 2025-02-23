@@ -9,6 +9,7 @@ import Turnstile, { useTurnstile } from 'react-turnstile';
 import { Id, toast } from 'react-toastify';
 import addToQueueServer from '@/actions/addToQueue';
 import { Login, Logout } from '@/actions/authActions';
+import { Artist, NowPlayingData, TrackObject } from '@/types/types';
 
 // Define the main MusicComponent function
 export default function MusicComponent({
@@ -40,51 +41,14 @@ export default function MusicComponent({
     });
   }, [error]);
 
-  // Define the NowPlayingType interface for type safety
-  interface Artist {
-    name: string;
-    external_urls: {
-      spotify: string;
-    };
-  }
-
-  interface Album {
-    name: string;
-    images: { url: string }[];
-    external_urls: {
-      spotify: string;
-    };
-  }
-
-  interface User {
-    name: string;
-    id: string;
-  }
-
-  interface NowPlayingType {
-    name: string;
-    title: string;
-    artists: Artist[];
-    album: Album;
-    albumImageUrl: string;
-    songUrl: string;
-    external_urls: {
-      spotify: string;
-    };
-    user: User;
-    progressMs: number;
-    durationMs: number;
-    isPlaying: boolean;
-  }
-
   // State variables for managing the music component
-  const [nowPlaying, setNowPlaying] = useState<NowPlayingType | null>(
+  const [nowPlaying, setNowPlaying] = useState<NowPlayingData | null>(
     currentlyPlayingData?.data,
   );
   const [progressMs, setProgressMs] = useState<number>(
     currentlyPlayingData?.progressMs || 0,
   );
-  const [queue, setQueue] = useState<NowPlayingType[]>(
+  const [queue, setQueue] = useState<TrackObject[]>(
     currentlyPlayingData?.queue || [],
   );
   const [queueEnabled, setQueueEnabled] = useState<boolean>(
@@ -266,7 +230,7 @@ export default function MusicComponent({
           autoClose: 2000,
         });
       }
-    } catch (error: unknown) {
+    } catch {
       router.refresh();
       toast.update(toastId, {
         render: 'A connection error has occurred',
@@ -417,7 +381,7 @@ export default function MusicComponent({
           <div className='border border-white rounded-md p-3 mt-3 overflow-y-scroll max-h-[200px]'>
             {queue.length > 0 ? (
               <ul className='queue-list'>
-                {queue.map((track: NowPlayingType, index: number) => (
+                {queue.map((track: TrackObject, index: number) => (
                   <li key={index} className='flex items-center mb-2'>
                     <span className='text-sm font-bold mr-2'>{index + 1}.</span>{' '}
                     <img

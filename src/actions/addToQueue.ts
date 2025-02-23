@@ -7,6 +7,7 @@ import db from '@/lib/db';
 import getSpotifyAccessToken from './getSpotifyAccessToken';
 import refreshAccessToken from './refreshAccessToken';
 import { getLastTrackData } from '@/lib/sse';
+import { TokenResponse } from '@/types/types';
 
 const { DISCORD_BOT_TOKEN, DISCORD_QUEUE_LOGS_CHANNEL_ID, BANNED_WORDS } =
   process.env;
@@ -90,11 +91,12 @@ export default async function addToQueue(
 
   const trackId = match[1];
 
-  let queue = await db.queueItem.findMany();
-  let songsAdded = await db.addedSong.findMany();
-  let recentlyPlayedTracks = await db.recentlyPlayedTrack.findMany();
+  const queue = await db.queueItem.findMany();
+  const songsAdded = await db.addedSong.findMany();
+  const recentlyPlayedTracks = await db.recentlyPlayedTrack.findMany();
 
-  const spotifyAccessData = (await getSpotifyAccessToken()) as any;
+  const spotifyAccessData =
+    (await getSpotifyAccessToken()) as unknown as TokenResponse;
   if (!spotifyAccessData)
     return { success: false, message: 'Internal server error' };
   let { access_token_expires, access_token: spotify_access_token } =
@@ -132,7 +134,9 @@ export default async function addToQueue(
     }
 
     const queueData = await queueResponse.json();
-    const queueTrackIds = queueData.queue.map((track: any) => track.id);
+    const queueTrackIds = queueData.queue.map(
+      (track: { id: string }) => track.id,
+    );
     const currentlyPlayingTrackId = queueData?.currently_playing?.id;
 
     if (currentlyPlayingTrackId === trackId) {
@@ -218,7 +222,9 @@ export default async function addToQueue(
     console.log(
       `${user.globalName} (${user.username}) (${user.id}) queued ${
         trackData.name
-      } - ${trackData.artists.map((artist: any) => artist.name).join(', ')}`,
+      } - ${trackData.artists
+        .map((artist: { name: string }) => artist.name)
+        .join(', ')}`,
     );
 
     const embed = {
@@ -227,7 +233,7 @@ export default async function addToQueue(
         trackData.name
       }](https://open.spotify.com/track/${trackId}) by ${trackData.artists
         .map(
-          (artist: any) =>
+          (artist: { name: string; id: string }) =>
             `[${artist.name}](https://open.spotify.com/artist/${artist.id})`,
         )
         .join(', ')}`,
@@ -263,7 +269,7 @@ export default async function addToQueue(
     return {
       success: true,
       message: `${trackData.name} - ${trackData.artists
-        .map((artist: any) => artist.name)
+        .map((artist: { name: string }) => artist.name)
         .join(', ')} added to queue`,
     };
   } catch (error) {
