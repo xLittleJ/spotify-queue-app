@@ -167,7 +167,7 @@ npx prisma db push
 1. Host the application on your domain
 2. Share the URL with your people
 3. Users log in with Discord
-4. Users can submit Spotify songs to automatically to add to your queue
+4. Users can submit Spotify songs to automatically add to your queue
 
 ## :handshake: Contributing
 
