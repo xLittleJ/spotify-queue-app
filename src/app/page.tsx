@@ -50,7 +50,7 @@ export default async function Home({
           error={errorMsg}
           currentlyPlaying={getLastTrackData()}
         />
-        {user?.id === DISCORD_DEVELOPER_ID && <Management />}{' '}
+        {user?.id === DISCORD_DEVELOPER_ID && <Management />}
       </div>
       <Link
         href='https://github.com/xlittlej/spotify-queue-app'
