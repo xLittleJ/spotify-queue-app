@@ -2,8 +2,9 @@
 
 A self-hosted web application that allows users to add songs to your Spotify queue. Built with Next.js 15.
 
-![License](https://img.shields.io/badge/license-MIT-blue)
-![Next.js](https://img.shields.io/badge/Next.js-15-black)
+[![License](https://img.shields.io/github/license/xlittlej/spotify-queue-app.svg?style=for-the-badge&color=blue)](https://github.com/xlittlej/spotify-queue-app/blob/main/LICENSE)
+[![Stargazers](https://img.shields.io/github/stars/xlittlej/spotify-queue-app.svg?style=for-the-badge&color=blue)](https://github.com/xlittlej/spotify-queue-app/stargazers)
+[![Next.js](https://img.shields.io/badge/Next.js-15-black?style=for-the-badge)](https://nextjs.org)
 
 ## :bookmark: Table of Contents
 
