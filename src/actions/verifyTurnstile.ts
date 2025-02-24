@@ -1,18 +1,18 @@
 'use server';
 
 const { TURNSTILE_SECRET_KEY } = process.env;
-const keyArr: string[] = [];
+const usedTokens: string[] = [];
 
 export default async function verifyTurnstile(
   turnstileToken: string,
 ): Promise<{ success: boolean; message: string }> {
-  if (!turnstileToken)
+  if (!turnstileToken || typeof turnstileToken !== 'string')
     return { success: false, message: 'No Cloudflare token provided' };
 
-  if (keyArr.includes(turnstileToken))
+  if (usedTokens.includes(turnstileToken))
     return { success: false, message: 'Cloudflare token already used' };
 
-  keyArr.push(turnstileToken);
+  usedTokens.push(turnstileToken);
 
   try {
     const response = await fetch(

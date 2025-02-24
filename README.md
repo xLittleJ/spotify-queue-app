@@ -33,7 +33,7 @@ A self-hosted web application that allows users to add songs to your Spotify que
 Before you begin, ensure you have:
 
 - **Node.js** (v20 or later)
-- **Yarn** package manager
+- **pnpm** package manager
 - **PostgreSQL** database
 - **Spotify Premium Account**
 - **Discord Account**
@@ -51,7 +51,7 @@ Before you begin, ensure you have:
 
 2. **Install Dependencies**
    ```bash
-   yarn install
+   pnpm install
    ```
 
 ## :gear: Configuration
@@ -99,8 +99,8 @@ Copy `.env.example` to `.env` and configure:
 
 - `NEXT_PUBLIC_TURNSTILE_SITE_KEY` - From Cloudflare Turnstile
 - `TURNSTILE_SECRET_KEY` - From Cloudflare Turnstile
-- `JWT_SECRET_KEY` - Generate using: `yarn jwt`
-- `JWT_ENCRYPTION_KEY` - Generate using: `yarn jwt`
+- `JWT_SECRET_KEY` - Generate using: `pnpm jwt`
+- `JWT_ENCRYPTION_KEY` - Generate using: `pnpm jwt`
 
 #### General
 
@@ -111,9 +111,8 @@ Copy `.env.example` to `.env` and configure:
 ### 4. Database Setup
 
 ```bash
-# Generate Prisma client and push schema
-npx prisma generate
-npx prisma db push
+# Push the schema to the database
+pnpm exec prisma db push
 ```
 
 ## :video_game: Running the Application
@@ -122,7 +121,7 @@ npx prisma db push
 
 1. Start the development server:
    ```bash
-   yarn dev
+   pnpm dev
    ```
 2. Visit `http://localhost:3000`
 3. Authorize your Spotify account:
@@ -134,11 +133,11 @@ npx prisma db push
 
 1. Build the application:
    ```bash
-   yarn build
+   pnpm build
    ```
 2. Start the production server:
    ```bash
-   yarn start
+   pnpm start
    ```
 
 ## :wrench: Troubleshooting
