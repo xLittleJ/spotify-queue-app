@@ -57,7 +57,7 @@ export default async function addToQueue(
     };
   }
   const lastTrackData = getLastTrackData();
-  if (!lastTrackData || !JSON.parse(lastTrackData).data?.title)
+  if (!lastTrackData || !lastTrackData?.data?.title)
     return {
       success: false,
       message: 'I am not currently listening to any music.',

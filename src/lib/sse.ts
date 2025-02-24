@@ -1,15 +1,19 @@
 import fetchNowPlaying from '@/actions/fetchNowPlaying';
+import { NowPlaying } from '@/types/types';
+
+const FETCH_INTERVAL_MS = 3000;
 
 const clients: Array<ReadableStreamDefaultController> = [];
 
-let lastTrackData: string | null = null;
+let lastTrackData: NowPlaying | null = null;
+
+let fetchTimeout: NodeJS.Timeout | null;
 
 export function addClient(controller: ReadableStreamDefaultController) {
   clients.push(controller);
-  controller.enqueue(
-    `data: ${JSON.stringify({ type: 'heartbeat', message: 'Connected' })}\n\n`,
-  );
-  if (lastTrackData) controller.enqueue(`data: ${lastTrackData}\n\n`);
+  controller.enqueue(`data: ${JSON.stringify({ message: 'Connected' })}\n\n`);
+  if (lastTrackData)
+    controller.enqueue(`data: ${JSON.stringify(lastTrackData)}\n\n`);
 
   const originalClose = controller.close;
   controller.close = () => {
@@ -25,7 +29,6 @@ export function removeClient(controller: ReadableStreamDefaultController) {
 }
 
 export function broadcastToAllClients(data: string) {
-  lastTrackData = data;
   clients.forEach((client) => {
     client.enqueue(`data: ${data}\n\n`);
   });
@@ -36,13 +39,32 @@ export function getLastTrackData() {
 }
 
 async function fetchAndBroadcast() {
-  const nowPlayingStr = await fetchNowPlaying();
-  if (nowPlayingStr && nowPlayingStr !== lastTrackData) {
-    broadcastToAllClients(nowPlayingStr);
+  const nowPlaying = await fetchNowPlaying();
+  if (typeof nowPlaying === 'number') {
+    console.log(`Spotify rate limit hit, retrying in ${nowPlaying} seconds.`);
+    return nowPlaying;
+  }
+  if (
+    !nowPlaying ||
+    (lastTrackData &&
+      JSON.stringify(lastTrackData) === JSON.stringify(nowPlaying))
+  )
+    return;
+  lastTrackData = nowPlaying;
+  broadcastToAllClients(JSON.stringify(nowPlaying));
+}
+
+async function scheduleNextFetch() {
+  const rateLimit = await fetchAndBroadcast();
+  if (rateLimit) {
+    await new Promise((resolve) => setTimeout(resolve, rateLimit * 1000));
+    scheduleNextFetch();
+  } else {
+    fetchTimeout = setTimeout(scheduleNextFetch, FETCH_INTERVAL_MS);
   }
 }
 
-const fetchInterval = setInterval(fetchAndBroadcast, 5000);
+scheduleNextFetch();
 
 async function shutdown() {
   console.log('Shutting down SSE clients and timers...');
@@ -52,7 +74,7 @@ async function shutdown() {
         new Promise<void>((resolve) => {
           controller.enqueue(
             `data: ${JSON.stringify({
-              message: 'Server connection lost...',
+              message: 'Server shutting down',
             })}\n\n`,
           );
           const originalClose = controller.close;
@@ -66,7 +88,7 @@ async function shutdown() {
   );
   clients.length = 0;
 
-  clearInterval(fetchInterval);
+  if (fetchTimeout) clearTimeout(fetchTimeout);
 }
 
 process.on('SIGTERM', async () => {

@@ -10,7 +10,9 @@ import getSpotifyAccessToken from './getSpotifyAccessToken';
 import refreshAccessToken from './refreshAccessToken';
 import db from '@/lib/db';
 
-export default async function fetchNowPlaying() {
+export default async function fetchNowPlaying(): Promise<
+  NowPlaying | null | number
+> {
   let queue = await db.queueItem.findMany();
   let songsAdded = await db.addedSong.findMany();
   let recentlyPlayedTracks = await db.recentlyPlayedTrack.findMany();
@@ -53,6 +55,21 @@ export default async function fetchNowPlaying() {
         },
       );
 
+      if (!response.ok) {
+        if (response.status === 429) {
+          return parseInt(
+            (response.headers.get('Retry-After') as string) ?? '5',
+          );
+        }
+        const data = await response.json();
+        console.error('Error fetching now playing:', data);
+        return null;
+      }
+
+      if (response.status === 204) {
+        return nowPlaying;
+      }
+
       const data = await response.json();
 
       const queueResponse = await fetch(
@@ -67,11 +84,12 @@ export default async function fetchNowPlaying() {
       if (!queueResponse.ok) {
         const data = await queueResponse.json();
         if (queueResponse.status === 429) {
-          console.log(
-            'Too many requests, please try again later (Spotify limit)',
+          return parseInt(
+            (queueResponse.headers.get('Retry-After') as string) ?? '5',
           );
         } else {
           console.error('Error fetching queue:', data);
+          return null;
         }
       }
 
@@ -194,10 +212,8 @@ export default async function fetchNowPlaying() {
           nowPlaying.data.user = songsAdded.find((s) => s.id === data.item?.id);
       }
     }
-    const nowPlayingStr = JSON.stringify(nowPlaying);
-
-    return nowPlayingStr;
   } catch (error) {
     console.error('Error fetching now playing track:', error);
   }
+  return nowPlaying;
 }

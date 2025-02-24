@@ -9,7 +9,7 @@ import Turnstile, { useTurnstile } from 'react-turnstile';
 import { Id, toast } from 'react-toastify';
 import addToQueueServer from '@/actions/addToQueue';
 import { Login, Logout } from '@/actions/authActions';
-import { Artist, NowPlayingData, TrackObject } from '@/types/types';
+import { Artist, NowPlaying, NowPlayingData, TrackObject } from '@/types/types';
 
 // Define the main MusicComponent function
 export default function MusicComponent({
@@ -23,12 +23,9 @@ export default function MusicComponent({
     globalName: string;
   } | null;
   error: string | null;
-  currentlyPlaying: string | null;
+  currentlyPlaying: NowPlaying | null;
 }) {
   const router = useRouter();
-
-  // Parse currently playing data from the string
-  const currentlyPlayingData = currentlyPlaying && JSON.parse(currentlyPlaying);
 
   // Show error toast if there is an error
   useEffect(() => {
@@ -43,16 +40,16 @@ export default function MusicComponent({
 
   // State variables for managing the music component
   const [nowPlaying, setNowPlaying] = useState<NowPlayingData | null>(
-    currentlyPlayingData?.data,
+    currentlyPlaying?.data || null,
   );
   const [progressMs, setProgressMs] = useState<number>(
-    currentlyPlayingData?.progressMs || 0,
+    currentlyPlaying?.data?.progressMs || 0,
   );
   const [queue, setQueue] = useState<TrackObject[]>(
-    currentlyPlayingData?.queue || [],
+    currentlyPlaying?.queue || [],
   );
   const [queueEnabled, setQueueEnabled] = useState<boolean>(
-    currentlyPlayingData?.queueEnabled || false,
+    currentlyPlaying?.queueEnabled || false,
   );
 
   const [serverToastId, setServerToastId] = useState<Id>('');
@@ -73,13 +70,10 @@ export default function MusicComponent({
         eventSource.close();
       }
 
-      console.log('Connecting to SSE server...');
       eventSource = new EventSource('/api/sse' as string);
 
       // Handle successful connection
       eventSource.onopen = () => {
-        console.log('SSE connection established');
-        router.refresh();
         if (serverToastId) {
           toast.update(serverToastId, {
             render: 'Server connection re-established',
@@ -94,16 +88,6 @@ export default function MusicComponent({
       // Handle incoming messages from the server
       eventSource.onmessage = (event) => {
         const data = JSON.parse(event.data);
-
-        if (data.type === 'heartbeat') return;
-
-        if (data.message) {
-          setServerToastId(
-            toast.loading(data.message, {
-              theme: 'dark',
-            }),
-          );
-        }
 
         // Update state with new data
         setNowPlaying(data?.data);
@@ -129,6 +113,14 @@ export default function MusicComponent({
           (eventSource.readyState === EventSource.CLOSED ||
             eventSource.readyState === EventSource.CONNECTING)
         ) {
+          if (!serverToastId) {
+            setServerToastId(
+              toast.loading('Server connection lost...', {
+                theme: 'dark',
+                toastId: 'server-connection-lost',
+              }),
+            );
+          }
           setTimeout(connectSSE, 3000);
         }
       };
@@ -374,7 +366,7 @@ export default function MusicComponent({
       </div>
 
       {nowPlaying?.title && (
-        <div className='mt-6 w-full'>
+        <div className='mt-6 w-screen sm:w-full'>
           <h3 className='text-[24px] font-bold text-white text-center'>
             Queue
           </h3>
