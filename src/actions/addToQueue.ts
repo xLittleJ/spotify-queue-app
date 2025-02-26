@@ -1,7 +1,6 @@
 'use server';
 
 import verifyTurnstile from './verifyTurnstile';
-import { isBanned } from './banActions';
 import getMe from './getMe';
 import db from '@/lib/db';
 import getSpotifyAccessToken from './getSpotifyAccessToken';
@@ -40,7 +39,11 @@ export default async function addToQueue(
 
   const { user } = userData;
 
-  const banned = await isBanned(user.id);
+  const banned = await db.bannedUser.findFirst({
+    where: {
+      id: user.id,
+    },
+  });
 
   if (banned)
     return {

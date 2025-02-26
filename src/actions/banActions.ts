@@ -9,16 +9,6 @@ function isSnowflake(id: string) {
   return /^\d+$/.test(id);
 }
 
-export async function isBanned(id: string): Promise<BannedUser | null> {
-  const banned = await db.bannedUser.findFirst({
-    where: {
-      id: id,
-    },
-  });
-
-  return banned;
-}
-
 export async function getBanned(): Promise<{
   success: boolean;
   message?: string;
