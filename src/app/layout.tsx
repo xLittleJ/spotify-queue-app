@@ -8,6 +8,10 @@ export const metadata: Metadata = {
   title: 'Spotify Queue App',
   description:
     'A Next.js 15 web app for people to add songs to your Spotify queue',
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 export default function RootLayout({
