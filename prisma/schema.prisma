@@ -34,18 +34,18 @@ model QueueItem {
 
 model AddedSong {
   id       String @unique
-  userId   String
+  userId   String @map("user_id")
   name     String
   username String
 
-  @@map("songsAdded")
+  @@map("added_songs")
 }
 
 model RecentlyPlayedTrack {
   id   String   @id @unique
   time DateTime
 
-  @@map("recentlyPlayedTracks")
+  @@map("recenly_played")
 }
 
 model BannedUser {
@@ -55,5 +55,5 @@ model BannedUser {
   avatar      String
   reason      String?
 
-  @@map("bannedUsers")
+  @@map("banned_users")
 }
