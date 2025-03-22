@@ -45,7 +45,7 @@ model RecentlyPlayedTrack {
   id   String   @id @unique
   time DateTime
 
-  @@map("recenly_played")
+  @@map("recently_played")
 }
 
 model BannedUser {
